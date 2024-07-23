@@ -209,7 +209,7 @@ def apply_permutation(ps: PermutationSpec, perm, params):
   """Apply a `perm` to `params`."""
   return {k: get_permuted_param(ps, perm, k, params) for k in params.keys()}
 
-def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_perm=None, device='cpu'):
+def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_perm=None, device=None):
   """Find a permutation of `params_b` to make them match `params_a`."""
   perm_sizes = {p: params_a[axes[0][0]].shape[axes[0][1]] for p, axes in ps.perm_to_axes.items()}
 
@@ -232,8 +232,8 @@ def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_
 
       ri, ci = linear_sum_assignment(A.detach().cpu().numpy(), maximize=True)
       assert (torch.tensor(ri) == torch.arange(len(ri))).all()
-      oldL = torch.einsum('ij,ij->i', A, torch.eye(n)[perm[p].long()]).sum()
-      newL = torch.einsum('ij,ij->i', A,torch.eye(n)[ci, :]).sum()
+      oldL = torch.einsum('ij,ij->i', A, torch.eye(n, device=device)[perm[p].long()]).sum()
+      newL = torch.einsum('ij,ij->i', A, torch.eye(n, device=device)[ci, :]).sum()
       print(f"{iteration}/{p}: {newL - oldL}")
       progress = progress or newL > oldL + 1e-12
 
@@ -242,7 +242,7 @@ def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_
     if not progress:
       break
 
-  return perm
+  return perm.to(device)
 
 def test_weight_matching():
   """If we just have a single hidden layer then it should converge after just one step."""
