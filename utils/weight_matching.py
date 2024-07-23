@@ -209,7 +209,7 @@ def apply_permutation(ps: PermutationSpec, perm, params):
   """Apply a `perm` to `params`."""
   return {k: get_permuted_param(ps, perm, k, params) for k in params.keys()}
 
-def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_perm=None):
+def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_perm=None, device='cpu'):
   """Find a permutation of `params_b` to make them match `params_a`."""
   perm_sizes = {p: params_a[axes[0][0]].shape[axes[0][1]] for p, axes in ps.perm_to_axes.items()}
 
@@ -221,7 +221,7 @@ def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_
     for p_ix in torch.randperm(len(perm_names)):
       p = perm_names[p_ix]
       n = perm_sizes[p]
-      A = torch.zeros((n, n))
+      A = torch.zeros((n, n), device=device)
       for wk, axis in ps.perm_to_axes[p]:
         w_a = params_a[wk]
         w_b = get_permuted_param(ps, perm, wk, params_b, except_axis=axis)
