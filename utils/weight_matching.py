@@ -230,7 +230,7 @@ def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_
        
         A += w_a @ w_b.T
 
-      ri, ci = linear_sum_assignment(A.detach().numpy(), maximize=True)
+      ri, ci = linear_sum_assignment(A.detach().cpu().numpy(), maximize=True)
       assert (torch.tensor(ri) == torch.arange(len(ri))).all()
       oldL = torch.einsum('ij,ij->i', A, torch.eye(n)[perm[p].long()]).sum()
       newL = torch.einsum('ij,ij->i', A,torch.eye(n)[ci, :]).sum()
