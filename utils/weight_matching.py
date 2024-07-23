@@ -237,12 +237,12 @@ def weight_matching(ps: PermutationSpec, params_a, params_b, max_iter=100, init_
       print(f"{iteration}/{p}: {newL - oldL}")
       progress = progress or newL > oldL + 1e-12
 
-      perm[p] = torch.Tensor(ci)
+      perm[p] = torch.Tensor(ci).to(device)
 
     if not progress:
       break
 
-  return perm.to(device)
+  return perm
 
 def test_weight_matching():
   """If we just have a single hidden layer then it should converge after just one step."""
